@@ -11,6 +11,8 @@ int is_end(char *c) {
 
 static int is_split_graph = 0;
 static int is_threshold_graph = 0;
+static int *erdos_eq_ptr = NULL;
+static int erdos_eq_cnt = 0;
 
 int get_conjugate(const int j, const int *d, size_t n) {
 	int cnt = 0;
@@ -52,9 +54,21 @@ int get_splittance_conj(const int *d, size_t n) {
 	return 0.5 * sum;
 }
 
+void print_erdos_eq() {
+	printf("k's with Erdos-Gallai equality (math. indexing): ");
+	for (int i = 0; i < erdos_eq_cnt; ++i) {
+		printf("%d", erdos_eq_ptr[i]);
+		if (i < erdos_eq_cnt - 1) printf(", ");
+	}
+	printf("\n");
+}
+
 int is_graphic(const int *base, size_t n) {
 	is_split_graph = 0;
 	is_threshold_graph = 0;
+	if (erdos_eq_ptr != NULL) free(erdos_eq_ptr);
+	erdos_eq_ptr = calloc(n, sizeof(int));
+	erdos_eq_cnt = 0;
 	int equal = 1;
 	for (unsigned int k = 1; k < n; ++k) {
 		unsigned int lSum = 0;
@@ -70,6 +84,10 @@ int is_graphic(const int *base, size_t n) {
 			is_split_graph = 1;
 		}
 		if (lSum != rSum) equal = 0;
+		else {
+			erdos_eq_ptr[erdos_eq_cnt] = k;
+			++erdos_eq_cnt;
+		}
 		if (lSum > rSum) return 0;
 	}
 	unsigned int sum = 0;
@@ -115,9 +133,12 @@ int main(void) {
 		printf("splittance (conj): %d\n", get_splittance_conj(el, num_el));
 		printf("is split graph: %c\n", BOOLTOCHAR(is_split_graph));
 		printf("is threshold graph: %c\n", BOOLTOCHAR(is_threshold_graph));
+		print_erdos_eq();
 	}
 	else printf("not graphic.\n");
 	
 	free(el);
+	free(erdos_eq_ptr);
+	erdos_eq_ptr = NULL;
 	return 0;
 }
