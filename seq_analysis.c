@@ -129,9 +129,10 @@ int main(void) {
 	if (is_graphic(el, num_el)) {
 		printf("graphic.\n");
 		printf("h: %d\n", get_h(el, num_el));
-		printf("splittance: %d\n", get_splittance(el, num_el));
+		int splittance = get_splittance(el, num_el);
+		printf("splittance: %d\n", splittance);
 		printf("splittance (conj): %d\n", get_splittance_conj(el, num_el));
-		printf("is split graph: %c\n", BOOLTOCHAR(is_split_graph));
+		printf("is split graph: %c\n", BOOLTOCHAR(splittance == 0));
 		printf("is threshold graph: %c\n", BOOLTOCHAR(is_threshold_graph));
 		print_erdos_eq();
 	}
