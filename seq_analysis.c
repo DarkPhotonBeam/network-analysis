@@ -13,6 +13,7 @@ static int is_split_graph = 0;
 static int is_threshold_graph = 0;
 static int *erdos_eq_ptr = NULL;
 static int erdos_eq_cnt = 0;
+static int num_edges = 0;
 
 int get_conjugate(const int j, const int *d, size_t n) {
 	int cnt = 0;
@@ -64,6 +65,7 @@ void print_erdos_eq() {
 }
 
 int is_graphic(const int *base, size_t n) {
+	num_edges = 0;
 	is_split_graph = 0;
 	is_threshold_graph = 0;
 	if (erdos_eq_ptr != NULL) free(erdos_eq_ptr);
@@ -94,6 +96,7 @@ int is_graphic(const int *base, size_t n) {
 	for (unsigned int i = 0; i < n; ++i) {
 		sum += base[i];
 	}
+	num_edges = sum / 2;
 	return (sum+1) % 2;
 }
 
@@ -123,11 +126,15 @@ int main(void) {
 	printf("You have entered %d numbers:\n", num_el);
 	qsort(el, num_el, sizeof(int), &comp_ints);
 	for (unsigned int i = 0; i < num_el; ++i) {
-		printf("%d\n", el[i]);
+		printf("%d", el[i]);
+		if (i < num_el - 1) printf(", ");
 	}
+	printf("\n");
 	printf("The entered sequence of numbers is ");
 	if (is_graphic(el, num_el)) {
 		printf("graphic.\n");
+		printf("#vertices: %d\n", num_el);
+		printf("#edges: %d\n", num_edges);
 		printf("h: %d\n", get_h(el, num_el));
 		int splittance = get_splittance(el, num_el);
 		printf("splittance: %d\n", splittance);
