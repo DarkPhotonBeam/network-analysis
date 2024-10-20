@@ -12,5 +12,5 @@ If graphic analyzes the graph it represents and gives relevant information / sta
 There are example graphs in the `graphs` directory.
 Use them like `./seq_analysis < ./graphs/<somegraph>.txt`
 
-# How to build
+## How to build
 `make`
