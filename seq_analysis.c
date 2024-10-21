@@ -112,23 +112,23 @@ void generate_graphml(const int* d, const int n, const char *name) {
   FILE *f = fopen(name, "w");
   fprintf(f, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
   fprintf(f, "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n");
-  fprintf(f, "<graph id=\"G\" edgedefault=\"undirected\">\n");
+  fprintf(f, "\t<graph id=\"G\" edgedefault=\"undirected\">\n");
   struct node *node_arr = malloc(n * sizeof(struct node));
   for (unsigned int i = 0; i < n; ++i) {
     node_arr[i].label = i;
     node_arr[i].degree = d[i];
-    fprintf(f, "<node id=\"n%d\"/>\n", i);
+    fprintf(f, "\t\t<node id=\"n%d\"/>\n", i);
   }
   // Algo of Havel, Hakimi
   while (node_arr[0].degree != 0) {
     for (unsigned int i = 1; i <= node_arr[0].degree; ++i) {
-      fprintf(f, "<edge source=\"n%d\" target=\"n%d\"/>\n", node_arr[0].label, node_arr[i].label);
+      fprintf(f, "\t\t<edge source=\"n%d\" target=\"n%d\"/>\n", node_arr[0].label, node_arr[i].label);
       --node_arr[i].degree;
     }
     node_arr[0].degree = 0;
     qsort(node_arr, n, sizeof(struct node), &nodecmp);
   }
-  fprintf(f, "</graph>\n");
+  fprintf(f, "\t</graph>\n");
   fprintf(f, "</graphml>");
   free(node_arr);
 }
@@ -170,7 +170,10 @@ int main(int argc, char *argv[]) {
 		printf("is split graph: %c\n", BOOLTOCHAR(splittance == 0));
 		printf("is threshold graph: %c\n", BOOLTOCHAR(is_threshold_graph));
 		print_erdos_eq();
-    if (gen_graphml) generate_graphml(el, num_el, "out.graphml");
+    if (gen_graphml) {
+      generate_graphml(el, num_el, "out.graphml");
+      printf("Graph generated and written to ./out.graphml\n");
+    }
 	}
 	else printf("not graphic.\n");
 	
