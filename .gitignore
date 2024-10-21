@@ -1,1 +1,3 @@
 seq_analysis
+*.o
+out.graphml

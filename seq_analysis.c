@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
@@ -106,7 +107,13 @@ int comp_ints(const void *a, const void *b) {
 	return bi - ai;
 }
 
-int main(void) {
+void generate_graphml(const int* d, const int n, const char *name) {
+  FILE *f = fopen(name, "w");
+  fprintf(f, "Fuck off, world!\n");
+}
+
+int main(int argc, char *argv[]) {
+  int gen_graphml = argc >= 2 && !strcmp(argv[1], "-g");
 	int arr_size = 10;
 	int *el = malloc(arr_size * sizeof(int));
 	int num_el = 0;
@@ -142,6 +149,7 @@ int main(void) {
 		printf("is split graph: %c\n", BOOLTOCHAR(splittance == 0));
 		printf("is threshold graph: %c\n", BOOLTOCHAR(is_threshold_graph));
 		print_erdos_eq();
+    if (gen_graphml) generate_graphml(el, num_el, "out.graphml");
 	}
 	else printf("not graphic.\n");
 	
