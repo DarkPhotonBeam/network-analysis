@@ -16,6 +16,7 @@ static int is_threshold_graph = 0;
 static int *erdos_eq_ptr = NULL;
 static int erdos_eq_cnt = 0;
 static int num_edges = 0;
+static int *st_cnt = NULL;
 
 int get_conjugate(const int j, const int *d, size_t n) {
 	int cnt = 0;
@@ -133,6 +134,97 @@ void generate_graphml(const int* d, const int n, const char *name) {
   free(node_arr);
 }
 
+int *calc_dists(const int* d, const int n) {
+	int *dist = malloc(sizeof(int) * n * n);
+	st_cnt = malloc(sizeof(int) * n * n);
+	for (unsigned int i = 0; i < n*n; ++i) {
+		dist[i] = n*(n-1);
+		st_cnt[i] = 0;
+	}
+	struct node *node_arr = malloc(n * sizeof(struct node));
+	for (unsigned int i = 0; i < n; ++i) {
+		node_arr[i].label = i;
+		node_arr[i].degree = d[i];
+		dist[i*n + i] = 0;
+		st_cnt[i*n + i] = 1;
+	}
+	while (node_arr[0].degree != 0) {
+		for (unsigned int i = 1; i <= node_arr[0].degree; ++i) {
+			int u = node_arr[0].label;
+			int v = node_arr[i].label;
+			dist[u * n + v] = 1;
+			dist[v * n + u] = 1;
+			st_cnt[u*n + v] = 1;
+			st_cnt[v*n + u] = 1;
+			--node_arr[i].degree;
+		}
+		node_arr[0].degree = 0;
+		qsort(node_arr, n, sizeof(struct node), &nodecmp);
+	}
+	for (unsigned int k = 0; k < n; ++k) {
+		for (unsigned int i = 0; i < n; ++i) {
+			for (unsigned int j = 0; j < n; ++j) {
+				if (dist[i*n+j]>(dist[i*n+k]+dist[k*n+j])) {
+					dist[i*n+j] = dist[i*n+k] + dist[k*n+j];
+					st_cnt[i*n+j] = st_cnt[i*n+k]*st_cnt[k*n+j];
+				} else if (dist[i*n+j]==(dist[i*n+k]+dist[k*n+j])) {
+					st_cnt[i*n+j]+=st_cnt[i*n+k]*st_cnt[k*n+j];
+				}
+			}
+		}
+	}
+	free(node_arr);
+	return dist;
+}
+
+void print_dist(const int* d, const int n) {
+	int *dist = calc_dists(d, n);
+	printf("Distance Matrix (from Havel-Hakimi-constructed graph):\n");
+	printf("    ");
+	for (int i = 0; i < n; ++i) {
+		printf("%3d ", i);
+	}
+	printf("\n");
+	for (int i = 0; i < n; ++i) {
+		printf("%3d ", i);
+		for (int j = 0; j < n; ++j) {
+			int val = dist[i*n + j];
+			if (val < 0) val = -1;
+			printf("%3d ", val);
+		}
+		printf("\n");
+	}
+	printf("Closeness of vertices:\n");
+	for (int i = 0; i < n; ++i) {
+		int sum = 0;
+		for (int j = 0; j < n; ++j) {
+			sum += dist[i*n + j];
+		}
+		float c = (n-1) / ((float)sum);
+		printf("C(%d) = %d / %d = %.3f\n", i, n-1, sum, c);
+	}
+	float *betweenness = malloc(sizeof(float) * n);
+	for (int i = 0; i < n; ++i) betweenness[i] = 0.0;
+	for (int s = 0; s < n; ++s) {
+		for (int t = 0; t < n; ++t) {
+			if (s == t) continue;
+			for (int v = 0; v < n; ++v) {
+				if (v == s || v == t) continue;
+				if (dist[s*n+v]+dist[v*n+t]==dist[s*n+t]) {
+					betweenness[v] += ((float)st_cnt[s*n+v]*st_cnt[v*n+t]) / st_cnt[s*n+t];
+				}
+			}
+		}
+	}
+	printf("Betweenness of vertices:\n");
+	for (int i = 0; i < n; ++i) {
+		printf("C_B(%d) = %3.3f\n", i, betweenness[i]);
+	}
+	free(dist);
+	free(st_cnt);
+	st_cnt = NULL;
+}
+
 int main(int argc, char *argv[]) {
   int gen_graphml = argc >= 2 && !strcmp(argv[1], "-g");
 	int arr_size = 10;
@@ -151,10 +243,10 @@ int main(int argc, char *argv[]) {
 		char c = getchar();
 		if (is_end(&c)) break;
 	}
-	printf("You have entered %d numbers:\n", num_el);
+	printf("You have entered %d numbers ([<label>]: <degree>):\n", num_el);
 	qsort(el, num_el, sizeof(int), &comp_ints);
 	for (unsigned int i = 0; i < num_el; ++i) {
-		printf("%d", el[i]);
+		printf("[%d]: %d", i, el[i]);
 		if (i < num_el - 1) printf(", ");
 	}
 	printf("\n");
@@ -170,6 +262,7 @@ int main(int argc, char *argv[]) {
 		printf("is split graph: %c\n", BOOLTOCHAR(splittance == 0));
 		printf("is threshold graph: %c\n", BOOLTOCHAR(is_threshold_graph));
 		print_erdos_eq();
+		print_dist(el, num_el);
     if (gen_graphml) {
       generate_graphml(el, num_el, "out.graphml");
       printf("Graph generated and written to ./out.graphml\n");
