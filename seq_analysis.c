@@ -222,6 +222,7 @@ void print_dist(const int* d, const int n) {
 	}
 	free(dist);
 	free(st_cnt);
+	free(betweenness);
 	st_cnt = NULL;
 }
 
