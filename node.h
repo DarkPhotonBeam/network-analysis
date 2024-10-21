@@ -6,6 +6,6 @@ struct node {
   int degree;
 };
 
-int nodecmp(void *a, void *b);
+int nodecmp(const void *a, const void *b);
 
 #endif // NODE_H 

@@ -12,5 +12,9 @@ If graphic analyzes the graph it represents and gives relevant information / sta
 There are example graphs in the `graphs` directory.
 Use them like `./seq_analysis < ./graphs/<somegraph>.txt`
 
+### Generate .graphlml File
+By adding the flag `-g` to the binary, for example `./seq_analysis -g < ./graphs/fish.txt` the program
+will generate a .graphml file (`out.graphml`) using the Havel-Hakimi-Algorithm.
+
 ## How to build
 `make`
