@@ -16,5 +16,9 @@ Use them like `./seq_analysis < ./graphs/<somegraph>.txt`
 By adding the flag `-g` to the binary, for example `./seq_analysis -g < ./graphs/fish.txt` the program
 will generate a .graphml file (`out.graphml`) using the Havel-Hakimi-Algorithm.
 
+### Figure out number of s-t paths of length k
+Add flag -adj to seq_analysis, then the program will output a file graph.adj. Then you can calculate the matrix of s-t paths of length k
+with `./count_walks <k>`.
+
 ## How to build
 `make`

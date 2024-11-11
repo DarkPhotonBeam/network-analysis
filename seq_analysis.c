@@ -237,13 +237,13 @@ void print_dist(const int* d, const int n, const int gen_adj) {
 	}
 	printf("\n");
 	FILE *f = gen_adj ? fopen("graph.adj", "w") : NULL;
+	if (f != NULL) fprintf(f, "%d\n", n);
 	for (int i = 0; i < n; ++i) {
 		printf("%2d ", i);
 		for (int j = 0; j < n; ++j) {
 			printf("%2d ", dyads[i*n + j]);
-			if (gen_adj) fprintf(f, "%d ", dyads[i*n + j]);
+			if (f != NULL) fprintf(f, "%d ", dyads[i*n + j]);
 		}
-		if (gen_adj) fprintf(f, "\n");
 		printf("\n");
 	}
 	if (f != NULL) fclose(f);

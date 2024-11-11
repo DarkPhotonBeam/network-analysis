@@ -1,4 +1,5 @@
 seq_analysis
+count_walks
 *.o
 out.graphml
 graph.adj
