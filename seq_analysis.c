@@ -17,6 +17,7 @@ static int *erdos_eq_ptr = NULL;
 static int erdos_eq_cnt = 0;
 static int num_edges = 0;
 static int *st_cnt = NULL;
+static int *dyads = NULL;
 
 int get_conjugate(const int j, const int *d, size_t n) {
 	int cnt = 0;
@@ -131,15 +132,22 @@ void generate_graphml(const int* d, const int n, const char *name) {
   }
   fprintf(f, "\t</graph>\n");
   fprintf(f, "</graphml>");
+  fclose(f);
   free(node_arr);
 }
 
 int *calc_dists(const int* d, const int n) {
 	int *dist = malloc(sizeof(int) * n * n);
+	if (dyads != NULL) {
+		free(dyads);
+		dyads = NULL;
+	}
+	dyads = malloc(sizeof(int) * n * n);
 	st_cnt = malloc(sizeof(int) * n * n);
 	for (unsigned int i = 0; i < n*n; ++i) {
 		dist[i] = n*(n-1);
 		st_cnt[i] = 0;
+		dyads[i] = 0;
 	}
 	struct node *node_arr = malloc(n * sizeof(struct node));
 	for (unsigned int i = 0; i < n; ++i) {
@@ -156,6 +164,8 @@ int *calc_dists(const int* d, const int n) {
 			dist[v * n + u] = 1;
 			st_cnt[u*n + v] = 1;
 			st_cnt[v*n + u] = 1;
+			dyads[u*n+v] = 1;
+			dyads[v*n+u] = 1;
 			--node_arr[i].degree;
 		}
 		node_arr[0].degree = 0;
@@ -177,7 +187,7 @@ int *calc_dists(const int* d, const int n) {
 	return dist;
 }
 
-void print_dist(const int* d, const int n) {
+void print_dist(const int* d, const int n, const int gen_adj) {
 	int *dist = calc_dists(d, n);
 	printf("Distance Matrix (from Havel-Hakimi-constructed graph):\n");
 	printf("    ");
@@ -220,14 +230,35 @@ void print_dist(const int* d, const int n) {
 	for (int i = 0; i < n; ++i) {
 		printf("C_B(%d) = %3.3f\n", i, betweenness[i]);
 	}
+	printf("Dyads:\n");
+	printf("   ");
+	for (int i = 0; i < n; ++i) {
+		printf("%2d ", i);
+	}
+	printf("\n");
+	FILE *f = gen_adj ? fopen("graph.adj", "w") : NULL;
+	for (int i = 0; i < n; ++i) {
+		printf("%2d ", i);
+		for (int j = 0; j < n; ++j) {
+			printf("%2d ", dyads[i*n + j]);
+			if (gen_adj) fprintf(f, "%d ", dyads[i*n + j]);
+		}
+		if (gen_adj) fprintf(f, "\n");
+		printf("\n");
+	}
+	if (f != NULL) fclose(f);
 	free(dist);
 	free(st_cnt);
 	free(betweenness);
+	free(dyads);
+	dyads = NULL;
 	st_cnt = NULL;
 }
 
 int main(int argc, char *argv[]) {
-  int gen_graphml = argc >= 2 && !strcmp(argv[1], "-g");
+  	int gen_graphml = argc >= 2 && (!strcmp(argv[1], "-g") || (argc >= 3 && !strcmp(argv[2], "-g")));
+	int gen_adj = argc >= 2 && (!strcmp(argv[1], "-adj") || (argc >= 3 && !strcmp(argv[2], "-adj")));
+
 	int arr_size = 10;
 	int *el = malloc(arr_size * sizeof(int));
 	int num_el = 0;
@@ -263,7 +294,7 @@ int main(int argc, char *argv[]) {
 		printf("is split graph: %c\n", BOOLTOCHAR(splittance == 0));
 		printf("is threshold graph: %c\n", BOOLTOCHAR(is_threshold_graph));
 		print_erdos_eq();
-		print_dist(el, num_el);
+		print_dist(el, num_el, gen_adj);
     if (gen_graphml) {
       generate_graphml(el, num_el, "out.graphml");
       printf("Graph generated and written to ./out.graphml\n");
